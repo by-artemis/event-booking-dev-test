@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Carbon\Carbon;
 use Tests\TestCase;
 use App\Models\Event;
 use App\Models\User;
@@ -14,16 +15,17 @@ class BookingFeatureTest extends TestCase
 
     public function testUserCanCreateBooking()
     {
-        $user = User::factory()->create();
         $event = Event::factory()->create();
 
-        $response = $this->actingAs($user)->post('/events/' . $event->id . '/book', [
-            'event_id' => $event->id,
-            'booking_time' => now(),
-            'booking_date' => now()->format('Y-m-d'),
-            'attendee_email' => 'test@test.com',
-            'attendee_name' => 'Best Tester',
+        $bookingDate = Carbon::now()->addDay();
+        $bookingTime = $bookingDate->addHour();
 
+        $response = $this->post("/events/{$event->id}/book", [
+            'event_id' => $event->id,
+            'booking_date' => $bookingDate->format('Y-m-d'),
+            'booking_time' => $bookingTime->format('H:i'),
+            'attendee_email' => fake()->safeEmail(),
+            'attendee_name' => fake()->firstName(),
         ]);
 
         $response->assertSee('Thank You!');

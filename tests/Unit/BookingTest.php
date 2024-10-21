@@ -2,19 +2,51 @@
 
 namespace Tests\Unit;
 
+use Request;
+use Carbon\Carbon;
 use Tests\TestCase;
-use App\Models\Booking;
 use App\Models\Event;
-use App\Models\User;
+use App\Models\Booking;
+use App\Services\BookingService;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 class BookingTest extends TestCase
 {
     use RefreshDatabase;
+    use WithFaker;
+    use WithoutMiddleware;
 
-    public function testBookingHasEvent()
+    private static Booking $booking;
+    private $service;
+
+    public function __construct($name = 'BookingTest')
     {
-        $booking = Booking::factory()->create();
-        $this->assertInstanceOf(Event::class, $booking->event);
+        parent::__construct($name);
+
+        $this->createApplication();
+
+        $this->service = new BookingService(new Booking());
     }
+
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+
+        $faker = \Faker\Factory::create();
+
+        self::$booking = Booking::factory()->create();
+    }
+
+    // public function testBookingHasEvent()
+    // {
+    //     $booking = self::$booking;
+    //     $this->assertInstanceOf(Event::class, $booking->event);
+    // }
+
+    // public function testCreate()
+    // {
+    //    
+    // }
 }

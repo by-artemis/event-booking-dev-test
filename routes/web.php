@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GoogleCalendarController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
@@ -19,13 +20,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/', [EventController::class, 'index'])->name('events.index');
+Route::middleware(['googleCalendarAuth'])->group(function () {
+    Route::get('/', [EventController::class, 'index'])->name('events.index');
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/events/{event}/calendar', [BookingController::class, 'create'])->name('bookings.create');
+    Route::post('/events/{event}/book', [BookingController::class, 'store'])->name('bookings.store');
+});
 
-Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
-
-Route::get('/events/{event}/calendar', [BookingController::class, 'create'])->name('bookings.create');
-Route::post('/events/{event}/book', [BookingController::class, 'store'])->name('bookings.store');
-
-
+Route::prefix( 'google')->controller(GoogleCalendarController::class)->group(function () {
+    Route::get('/calendar', 'connectToGoogle')->name('google.connect');
+    Route::get('/calendar/auth', 'redirectAuth')->name('google.auth');
+    Route::get('/calendar/auth/callback', 'handleCallback')->name('google.callback');
+    Route::get('/calendar/auth/revoke', 'revokeAccess')->name('google.revoke');
+});
 
 require __DIR__ . '/auth.php';

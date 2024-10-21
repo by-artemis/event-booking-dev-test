@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Booking;
 use App\Models\Event;
-use App\Models\User;
+use App\Models\Booking;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BookingFactory extends Factory
@@ -15,10 +14,10 @@ class BookingFactory extends Factory
     {
         return [
             'event_id' => Event::factory(),
-            'booking_time' => $this->faker->dateTimeBetween('now', '+1 month'),
-            'booking_date' => $this->faker->date(),
-            'attendee_name' => $this->faker->name(),
-            'attendee_email' => $this->faker->email()
+            'booking_time' => fake()->time('H:i'),
+            'booking_date' => fake()->date('Y-m-d'),
+            'attendee_name' => fake()->firstName(),
+            'attendee_email' => fake()->safeEmail()
         ];
     }
 }

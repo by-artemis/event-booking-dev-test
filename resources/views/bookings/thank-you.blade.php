@@ -6,11 +6,11 @@
                 Your booking has been successfully created.
             </p>
             <div class="mb-6">
-                <p class="text-gray-600 font-semibold">Booking Details:</p>
-                <ul class="list-disc pl-5">
-                    <li><strong>Event Name:</strong> {{ $booking->event->name }}</li>
-                    <li><strong>Date:</strong> {{ $booking->booking_date }}</li>
-                    <li><strong>Time:</strong> {{ $booking->booking_time }}</li>
+                <p class="text-center text-lg font-semibold">Booking Details:</p>
+                <ul class="text-center py-5">
+                    <li class="text-center"><strong>Event Name:</strong> {{ $booking->event->name }}</li>
+                    <li class="text-center"><strong>Date:</strong> {{ $booking->booking_date }}</li>
+                    <li class="text-center"><strong>Time:</strong> {{ $booking->booking_time }}</li>
                 </ul>
             </div>
             <div class="text-center">

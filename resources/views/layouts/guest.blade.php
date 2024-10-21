@@ -14,6 +14,8 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @stack('scripts')
 </head>
 
 <body class="font-sans text-gray-900 antialiased">
@@ -22,7 +24,7 @@
         {{-- <div
             class="w-full md:max-w-lg mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg"> --}}
         <main class="flex items-center justify-center flex-col min-h-screen bg-gray-100 py-8 px-4">
-            <div>
+            <div class="py-6">
                 <a href="/">
                     <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
                 </a>

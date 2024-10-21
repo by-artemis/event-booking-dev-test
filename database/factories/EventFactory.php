@@ -12,9 +12,9 @@ class EventFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->word,
-            'duration' => $this->faker->numberBetween(30, 180),
-            'description' => $this->faker->sentence,
+            'name' => fake()->word,
+            'duration' => fake()->numberBetween(30, 180),
+            'description' => fake()->sentence,
         ];
     }
 }
