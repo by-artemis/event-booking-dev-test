@@ -25,6 +25,7 @@ Route::middleware(['googleCalendarAuth'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/events/{event}/calendar', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('/events/{event}/book', [BookingController::class, 'store'])->name('bookings.store');
+    Route::delete('/events/{event}', [BookingController::class, 'destroy'])->name('bookings.destroy');
 });
 
 Route::prefix( 'google')->controller(GoogleCalendarController::class)->group(function () {

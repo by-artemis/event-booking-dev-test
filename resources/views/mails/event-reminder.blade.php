@@ -12,7 +12,7 @@
             <p class="mt-2 leading-loose text-gray-600 dark:text-gray-300">
                 This is a friendly reminder about your upcoming
                     <span class="font-bold bg-yellow-100">{{ $bookingData['event_name'] }}</span> 
-                    booking on 
+                    event booking on 
                     <span class="font-bold bg-yellow-100">{{ $bookingData['booking_date'] }}</span>
                     happening in an hour.
             </p>

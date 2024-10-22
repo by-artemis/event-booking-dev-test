@@ -15,12 +15,17 @@ class BookingService
         $this->service = $booking;
     }
 
+    /**
+     * Creates a new booking.
+     * @param mixed $bookingData
+     * @return mixed
+     */
     public function createBooking($bookingData)
     {
         try {
-            Log::info('[BookingService] Booking inserted to database successfully!');
+            Log::info('[BookingService] Booking event inserted to database successfully!');
 
-            return $this->service->create($bookingData);
+            return $this->service->create(attributes: $bookingData);
         } catch (\Exception $e) {
             Log::error('[BookingService] Error in createBooking. E: ', [
                 $e->getMessage()
@@ -30,6 +35,13 @@ class BookingService
         }
     }
 
+    /**
+     * Generates a list of time slots for a given date and event, considering existing bookings.
+     * @param mixed $date
+     * @param mixed $timezone
+     * @param mixed $eventId
+     * @return array<bool|string>[]
+     */
     public function generateTimeSlots($date, $timezone, $eventId)
     {
         // Use a consistent timezone for now()
@@ -59,7 +71,7 @@ class BookingService
         }
 
         while ($startOfDay < $endOfDay) {
-            $slotTime = $startOfDay->format('H:i');
+            $slotTime = $startOfDay->format('H:i:s');
 
             // Check if the current time slot is already booked
             $isAvailable = !in_array($slotTime, $bookedSlots);
@@ -78,5 +90,27 @@ class BookingService
         }
 
         return $timeSlots;
+    }
+
+    /**
+     * Deletes a booking.
+     * @param mixed $id
+     * @return bool
+     */
+    public function deleteBooking($id)
+    {
+        try {
+            $booking = Booking::findOrFail($id);
+            $booking->delete();
+
+            Log::info('[BookingService] Booking event deleted successfully!');
+            return true;
+        } catch (\Exception $e) {
+            Log::error('[BookingService] Error in deleteBooking. E: ', [
+                $e->getMessage()
+            ]);
+
+            throw $e;
+        }
     }
 }

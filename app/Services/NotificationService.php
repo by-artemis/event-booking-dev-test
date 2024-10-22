@@ -12,6 +12,11 @@ use App\Notifications\BookingConfirmedNotification;
 
 class NotificationService
 {
+    /**
+     * Sends a confirmation email to the attendee of a booking event.
+     * @param \App\Models\Booking $booking
+     * @return void
+     */
     public function sendConfirmationEmail(Booking $booking)
     {
         try {
@@ -38,18 +43,21 @@ class NotificationService
             Log::error('[NotificationService] Error in sendConfirmationEmail. E: ', [
                 $e->getMessage()
             ]);
-
-            throw $e;
         }
     }
 
+    /**
+     * Sends an event reminder email to the attendee of a booking event.
+     * @param \App\Models\Booking $booking
+     * @return void
+     */
     public function sendEventReminder(Booking $booking)
     {
         try {
             $event = $booking->event;
 
             $dateTime = Carbon::parse("$booking->booking_date $booking->booking_time");
-            $reminderTime = $dateTime->subMinutes(60);
+            $reminderTime = $dateTime->subMinutes(60); // 1 hour before the scheduled booking
 
             $bookingData = [
                 'event_name' => $event->name,
@@ -72,11 +80,15 @@ class NotificationService
             Log::error('[NotificationService] Error in sendEventReminder. E: ', [
                 $e->getMessage()
             ]);
-
-            throw $e;
         }
     }
 
+    /**
+     * Generates a Google Calendar ICS attachment for a booking event
+     * @param mixed $event
+     * @param mixed $booking
+     * @return string|void
+     */
     private function generateCalendarICS($event, $booking)
     {
         try {
@@ -93,9 +105,6 @@ class NotificationService
             Log::error('[NotificationService] Error in generateCalendarICS. E: ', [
                 $e->getMessage()
             ]);
-
-            throw $e;
         }
-        
     }
 }

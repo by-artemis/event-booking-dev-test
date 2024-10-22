@@ -77,7 +77,8 @@
                             <option value="" disabled selected>Time</option>
                             @foreach ($timeSlots as $time)
                                 <option value="{{ $time['time'] }}" {{ $time['is_available'] ? '' : 'disabled' }}>
-                                    {{ $time['time'] }} {{ $time['is_available'] ? '' : '(Booked)' }}
+                                    {{ \Carbon\Carbon::parse($time['time'])->format('H:i') }} 
+                                    {{ $time['is_available'] ? '' : '(Booked)' }}
                                 </option>
                             @endforeach
                         </select>
@@ -96,7 +97,9 @@
                     @csrf
                     <p><strong>Event:</strong> {{ $event->name }}</p>
                     <p><strong>Date:</strong> {{ request('booking_date') }}</p>
-                    <p><strong>Time:</strong> {{ request('booking_time') }}</p>
+                    <p><strong>Time:</strong> 
+                        {{ \Carbon\Carbon::parse(request('booking_time'))->format('H:i') }}
+                    </p>
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
                     <input type="hidden" name="booking_timezone" value="{{ request('booking_timezone') }}">
                     <input type="hidden" name="booking_date" value="{{ request('booking_date') }}">
@@ -121,7 +124,7 @@
             </div>
         @endif
     </div>
-    <a href="/" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-        Back to Events
+    <a href="/bookings" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
+        Back to Bookings
     </a>
 </x-guest-layout>

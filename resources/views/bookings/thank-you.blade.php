@@ -10,13 +10,15 @@
                 <ul class="text-center py-5">
                     <li class="text-center"><strong>Event Name:</strong> {{ $booking->event->name }}</li>
                     <li class="text-center"><strong>Date:</strong> {{ $booking->booking_date }}</li>
-                    <li class="text-center"><strong>Time:</strong> {{ $booking->booking_time }}</li>
+                    <li class="text-center"><strong>Time:</strong> 
+                        {{ \Carbon\Carbon::parse($booking->booking_time)->format('H:i') }}
+                    </li>
                 </ul>
             </div>
             <div class="text-center">
-                <a href="{{ route('events.index') }}"
+                <a href="{{ route('bookings.index') }}"
                     class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                    View Events
+                    View Bookings
                 </a>
             </div>
         </div>

@@ -14,10 +14,11 @@ use Illuminate\Foundation\Testing\WithoutMiddleware;
 
 class BookingTest extends TestCase
 {
-    use RefreshDatabase;
+    // use RefreshDatabase;
     use WithFaker;
     use WithoutMiddleware;
 
+    private static Event $event;
     private static Booking $booking;
     private $service;
 
@@ -35,15 +36,22 @@ class BookingTest extends TestCase
         parent::setUpBeforeClass();
 
         $faker = \Faker\Factory::create();
-
-        self::$booking = Booking::factory()->create();
+        self::$booking = Booking::factory()
+            ->create();
     }
 
-    // public function testBookingHasEvent()
-    // {
-    //     $booking = self::$booking;
-    //     $this->assertInstanceOf(Event::class, $booking->event);
-    // }
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+        self::$booking->event->delete();
+        self::$booking->delete();
+    }
+
+    public function testBookingHasEvent()
+    {
+        $booking = self::$booking;
+        $this->assertInstanceOf(Event::class, $booking->event);
+    }
 
     // public function testCreate()
     // {

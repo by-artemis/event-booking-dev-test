@@ -18,7 +18,8 @@ class Booking extends Model
         'attendee_name',
         'attendee_email',
         'booking_date',
-        'booking_time'
+        'booking_time',
+        'booking_timezone',
     ];
 
     public function event()

@@ -27,9 +27,9 @@ class BookingController extends Controller
 
     public function index()
     {
-        $bookings = Booking::with('event')->get();
+        $bookedEvents = Booking::with('event')->get();
 
-        return view('bookings.index', compact('bookings'));
+        return view('bookings.index', compact('bookedEvents'));
     }
 
     public function store(CreateBookingRequest $request, $eventId)
@@ -47,8 +47,7 @@ class BookingController extends Controller
             $event->duration
         );
 
-        // If selected timeslot is not available,
-        // redirect back to page with the next 3 available time slot suggestions
+        // If selected timeslot is not available, redirect back to page with the next 3 available time slots
         if (!$timeSlot['isAvailable']) {
             $params['event'] = $eventId;
             $params['booking_date'] = $bookingDate;
@@ -63,7 +62,9 @@ class BookingController extends Controller
                 $date = Carbon::parse($bookingDate)->format('m-d-Y');
                 $errors = [
                     'moved_to_next_day' =>
-                        "{$errors['time_slot_unavailable']} No more available slots for {$date} after {$bookingTime}. Date is now adjusted to the next day (or you may select another date).",
+                        "{$errors['time_slot_unavailable']} 
+                        No more available slots for {$date} after {$bookingTime}. 
+                        Date is now adjusted to the next day (or you may select another date).",
                 ];
             }
 
@@ -142,5 +143,12 @@ class BookingController extends Controller
             'timezones',
             'emptyTimeSlots'
         ));
+    }
+
+    public function destroy($eventId)
+    {
+        $this->bookingService->deleteBooking($eventId);
+        
+        return redirect()->route('bookings.index');
     }
 }

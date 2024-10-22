@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('attendee_email');
             $table->date('booking_date');
             $table->time('booking_time');
+            $table->string('booking_timezone');
             $table->timestamps();
         });
     }

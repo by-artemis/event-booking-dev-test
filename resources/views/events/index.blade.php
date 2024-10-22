@@ -15,10 +15,17 @@
                     <h2 class="text-xl font-semibold mb-2">{{ $event->name }}</h2>
                     <p class="text-gray-700 mb-2"><strong>Duration:</strong> {{ $event->duration }} minutes</p>
                     <p class="text-gray-600 mb-4">{{ $event->description }}</p>
-                    <a href="{{ route('bookings.create', $event->id) }}" class="text-blue-500 hover:underline">View
-                        Details</a>
+                    <a href="{{ route('bookings.create', $event->id) }}" class="text-blue-500 hover:underline">
+                        View Details
+                    </a>
                 </div>
             @endforeach
         </div>
+    </div>
+
+    <div class="container flex justify-center mx-auto py-8 px-4">
+        <a href="{{ route('bookings.index', $event->id) }}" class="px-4 py-2 bg-blue-600 text-white rounded">
+            View Bookings
+        </a>
     </div>
 </x-guest-layout>

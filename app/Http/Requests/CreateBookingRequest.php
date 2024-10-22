@@ -38,7 +38,7 @@ class CreateBookingRequest extends FormRequest
             ],
             'booking_time' => [
                 'required',
-                'date_format:H:i',
+                'date_format:H:i:s',
                 new WeekdayTime, // Custom validation rule for booking time within 8:00AM to 5:00PM
             ],
             'attendee_name' => ['required', 'max:128'],
