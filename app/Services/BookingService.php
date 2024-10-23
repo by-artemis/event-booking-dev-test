@@ -25,14 +25,14 @@ class BookingService
         try {
             Log::info('[BookingService] Booking event inserted to database successfully!');
 
-            return $this->service->create(attributes: $bookingData);
-        } catch (\Exception $e) {
+            return $this->service->create( $bookingData);
+        } catch (\Exception $e) { // @codeCoverageIgnoreStart
             Log::error('[BookingService] Error in createBooking. E: ', [
                 $e->getMessage()
             ]);
 
             throw $e;
-        }
+        } // @codeCoverageIgnoreEnd
     }
 
     /**

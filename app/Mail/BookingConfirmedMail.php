@@ -53,7 +53,7 @@ class BookingConfirmedMail extends Mailable
     public function attachments(): array
     {
         return [
-            Attachment::fromData(fn () => $this->bookingData['ics_attachment'], 'calendar.ics')
+            Attachment::fromData(fn () => $this->bookingData['ics_attachment'], 'invite.ics')
                 ->withMime('text/calendar;charset=UTF-8;method=REQUEST'),
         ];
     }

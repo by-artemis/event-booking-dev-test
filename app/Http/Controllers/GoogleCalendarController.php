@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\Google\CalendarService as GoogleCalendarService;
+use App\Services\GoogleCalendarService;
 
 class GoogleCalendarController extends Controller
 {

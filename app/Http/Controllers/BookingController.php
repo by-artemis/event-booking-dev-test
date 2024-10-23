@@ -9,19 +9,26 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use App\Services\BookingService;
 use App\Services\NotificationService;
-use App\Services\Google\CalendarService;
+use App\Services\GoogleCalendarService;
+use App\Services\EventAvailabilityService;
 use App\Http\Requests\CreateBookingRequest;
 
 class BookingController extends Controller
 {
     protected BookingService $bookingService;
-    protected CalendarService $calendarService;
+    protected GoogleCalendarService $googleCalendarService;
+    protected EventAvailabilityService $eventAvailabilityService;
     protected NotificationService $notificationService;
 
-    public function __construct(BookingService $bookingService, CalendarService $calendarService, NotificationService $notificationService)
-    {
+    public function __construct(
+        BookingService $bookingService,
+        GoogleCalendarService $googleCalendarService,
+        EventAvailabilityService $eventAvailabilityService,
+        NotificationService $notificationService
+    ) {
         $this->bookingService = $bookingService;
-        $this->calendarService = $calendarService;
+        $this->googleCalendarService = $googleCalendarService;
+        $this->eventAvailabilityService = $eventAvailabilityService;
         $this->notificationService = $notificationService;
     }
 
@@ -40,7 +47,7 @@ class BookingController extends Controller
         $bookingTime = $request->getBookingTime();
 
         // Check for existing booking in Google Calendar
-        $timeSlot = $this->calendarService->checkTimeSlotAvailability(
+        $timeSlot = $this->eventAvailabilityService->getTimeSlotAvailability(
             $bookingTimezone,
             $bookingDate,
             $bookingTime,
@@ -55,7 +62,7 @@ class BookingController extends Controller
 
             $errors['time_slot_unavailable'] = 'The selected date and time conflicts with an existing event.';
 
-            if ($timeSlot['isMovedTheNextDay']) {
+            if ($timeSlot['isMovedToNextDay']) {
                 $params['booking_date'] = Carbon::parse($bookingDate)->addDay()->format('Y-m-d');
                 unset($params['next_slots']);
 
@@ -87,7 +94,7 @@ class BookingController extends Controller
         ];
 
         // Add event to Google Calendar
-        $eventAdded = $this->calendarService->createEventToGoogleCalendar((object) $eventData);
+        $eventAdded = $this->googleCalendarService->createEventToGoogleCalendar((object) $eventData);
 
         if ($eventAdded) {
             $formData = [
@@ -112,9 +119,11 @@ class BookingController extends Controller
             return view('bookings.thank-you', ['booking' => $booking]);
         }
 
-        return redirect()->withErrors([
-            'error' => 'Unable to create event.'
-        ]);
+        return redirect()
+            ->route('bookings.create', ['event' => $eventId])
+            ->withErrors([
+                'error' => 'Unable to create event. Please try again.'
+            ]);
     }
 
     public function create(Request $request, $eventId)
@@ -129,7 +138,7 @@ class BookingController extends Controller
 
         if (!$timeSlots) {
             $date = Carbon::parse($selectedDate)->format('m-d-Y');
-            $emptyTimeSlots = "No more available time slots {$date}. Please choose another date.";
+            $emptyTimeSlots = "No more available time slots for {$date}. Please choose another date.";
         }
 
         $dateToday = Carbon::now()->format('Y-m-d');
