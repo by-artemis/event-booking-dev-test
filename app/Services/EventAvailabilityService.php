@@ -31,9 +31,7 @@ class EventAvailabilityService
             $endTime = $startTime->copy()->addMinutes($duration);
 
             $hasConflictingEvents = $this->hasConflictingEvents($startTime, $endTime, $timezone);
-            dd($hasConflictingEvents);
 
-            // dd($startTime, $endTime, $hasConflictingEvents);
             if ($hasConflictingEvents) {
                 $nextSlots = $this->getNextAvailableSlots($timezone, $startTime, $duration);
 

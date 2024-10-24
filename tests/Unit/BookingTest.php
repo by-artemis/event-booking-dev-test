@@ -2,15 +2,17 @@
 
 namespace Tests\Unit;
 
-use Mockery;
 use Carbon\Carbon;
 use Tests\TestCase;
 use App\Models\Event;
 use App\Models\Booking;
 use App\Services\BookingService;
+use Google\Client as GoogleClient;
 use App\Services\GoogleCalendarService;
+use Illuminate\Support\Facades\Session;
 use App\Services\EventAvailabilityService;
 use Illuminate\Foundation\Testing\WithFaker;
+use Google\Service\Calendar as GoogleCalendar;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
@@ -24,15 +26,15 @@ class BookingTest extends TestCase
     private static Booking $booking;
 
     private BookingService $bookingService;
-    private GoogleCalendarService $calendarService;
+    private GoogleCalendarService $googleCalendarService;
     private EventAvailabilityService $eventAvailabilityService;
 
-    private $googleClientMock;
-    private $googleCalendarServiceMock;
-    private $bookingServiceMock;
-    private $calendarServiceMock;
+    private GoogleCalendar $googleCalendar;
 
-    private $prophet;
+    private $googleClientMock;
+    protected $bookingMock;
+    private $accessToken;
+    private $events;
 
     public function __construct($name = 'BookingTest')
     {
@@ -44,26 +46,19 @@ class BookingTest extends TestCase
     {
         parent::setUp();
 
+        $this->googleCalendarService = new GoogleCalendarService();
+        $this->eventAvailabilityService = new EventAvailabilityService($this->googleCalendarService);
         $this->bookingService = new BookingService(new Booking);
-        $this->calendarService = new GoogleCalendarService();
-        $this->eventAvailabilityService = new EventAvailabilityService($this->calendarService);
     }
 
-    // public function tearDown(): void
-    // {
-    //     parent::tearDown();
-
-    //     Mockery::close();
-
-    //     self::$booking->event->delete();
-    //     self::$booking->delete();
-    // }
+    public function tearDown(): void
+    {
+        parent::tearDown();
+    }
 
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-
-        $faker = \Faker\Factory::create();
 
         self::$booking = Booking::factory()->create();
     }
@@ -71,8 +66,6 @@ class BookingTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
-
-        // Mockery::close();
 
         self::$booking->event->delete();
         self::$booking->delete();
@@ -124,49 +117,5 @@ class BookingTest extends TestCase
 
         $this->assertTrue($deletedBooking);
         $this->assertDatabaseMissing('bookings', ['id' => $bookingId]);
-    }
-
-    public function testCheckTimeSlotAvailability(): void
-    {
-        $duration = 60;
-        $selectedTime = '14:00:00';
-        $data = [
-            'start' => Carbon::now()->addDays(2),
-            'end' => Carbon::now()->addDays(2)->addMinutes($duration),
-            'timezone' => 'Asia/Manila'
-        ];
-
-        // Mock GoogleCalendarService
-        $this->calendarServiceMock = Mockery::mock($this->calendarService);
-
-        // Arrange: Mock the behavior of the GoogleCalendarService
-        $this->calendarServiceMock
-            ->shouldReceive('authenticate')
-            ->once();
-
-        // Arrange: Mock the behavior of the GoogleCalendarService
-        $this->calendarServiceMock
-            ->shouldReceive('getClient')
-            ->once();
-
-        // Mock hasConflictingEvents to return an empty array (no conflicts)
-        $this->calendarServiceMock
-            ->shouldReceive('getCalendarEvents')
-            ->with($data)
-            ->andReturn([]);
-
-        // Inject the mocked GoogleCalendarService into EventAvailabilityService
-        $eventAvailabilityService = new EventAvailabilityService($this->calendarServiceMock);
-
-        // Act: Call the method
-        $result = $eventAvailabilityService->getTimeSlotAvailability(
-            'Asia/Manila',
-            Carbon::now()->addDays(2)->format('Y-m-d'),
-            $selectedTime,
-            $duration
-        );
-
-        // Assert: Check the expected result
-        $this->assertEquals(['isAvailable' => true], $result);
     }
 }

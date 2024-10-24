@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Log;
+use Session;
 use Carbon\Carbon;
 use Google\Client as GoogleClient;
 use Google\Service\Calendar\FreeBusyRequest;
@@ -13,11 +14,12 @@ use Google\Service\Calendar\EventDateTime as GoogleEventDateTime;
 class GoogleCalendarService
 {
     protected $client;
-    protected $service;
+    protected $googleCalendar;
 
-    public function __construct()
+    public function __construct(GoogleClient $client = null)
     {
-        $this->client = new GoogleClient();
+        // $this->client = new GoogleClient();
+        $this->client = $client ?? new GoogleClient();
 
         $this->client->setClientId(config('services.google.client_id'));
         $this->client->setClientSecret(config('services.google.client_secret'));
@@ -27,7 +29,7 @@ class GoogleCalendarService
         $this->client->setAccessType(config('services.google.access_type'));
         $this->client->addScope(config('services.google.scopes'));
 
-        $this->service = new GoogleCalendar($this->client);
+        $this->googleCalendar = new GoogleCalendar($this->client);
     }
 
     /**
@@ -38,12 +40,12 @@ class GoogleCalendarService
     public function authenticate($code)
     {
         try {
-            $this->client->fetchAccessTokenWithAuthCode($code);
+            $accessToken = $this->client->fetchAccessTokenWithAuthCode($code);
 
-            session(['google_access_token' => $this->client->getAccessToken()]);
+            Session::put('google_access_token', $accessToken['access_token']);
 
-            $this->client->fetchAccessTokenWithRefreshToken(session('google_access_token'));
-
+            $this->client->fetchAccessTokenWithRefreshToken($accessToken['refresh_token']);
+            
             Log::info('[GoogleCalendarService] Google Calendar authenticated successfully!');
         } catch (\Exception $e) {
             Log::error('[GoogleCalendarService] Error in authenticate. E: ', [
@@ -59,8 +61,8 @@ class GoogleCalendarService
     public function getClient()
     {
         try {
-            if (session('google_access_token')) {
-                $this->client->setAccessToken(session('google_access_token'));
+            if (Session::get('google_access_token')) {
+                $this->client->setAccessToken(Session::get('google_access_token'));
             }
 
             Log::info('[GoogleCalendarService] Google Calendar client stored to session successfully!');
@@ -73,34 +75,22 @@ class GoogleCalendarService
         }
     }
 
-    public function getService()
+    public function getGoogleCalendar()
     {
         try {
             if (!$this->client->isAccessTokenExpired()) {
-                $this->service = new GoogleCalendar($this->client);
+                $this->googleCalendar = new GoogleCalendar($this->client);
             }
 
             Log::info('[GoogleCalendarService] Google Calendar client stored to session successfully!');
 
-            return $this->service;
+            return $this->googleCalendar;
         } catch (\Exception $e) {
             Log::error('[GoogleCalendarService] Error in getClient. E: ', [
                 $e->getMessage()
             ]);
             return null;
         }
-    }
-
-    protected function getCalendarService()
-    {
-        $service = $this->getService();
-
-        // Check if the service is valid
-        if (!$service) {
-            Log::error('[GoogleCalendarService] Unable to create Google Calendar service. Authentication may be required.');
-        }
-
-        return $service;
     }
 
     /**
@@ -161,16 +151,16 @@ class GoogleCalendarService
                 'email' => $eventData->attendee_email,
             ]);
 
-            // Insert event to Google Calendar
-            $event = $this->service->events->insert($calendarId, $event);
-
             Log::info('[GoogleCalendarService] Event inserted to Google Calendar successfully!');
 
-            return $event;
+            // Insert event to Google Calendar
+            return $this->googleCalendar->events->insert($calendarId, $event);
         } catch (\Exception $e) {
             Log::error('[GoogleCalendarService] Error in createEventToGoogleCalendar. E: ', [
                 $e->getMessage()
             ]);
+            
+            throw $e;
         }
     }
 
@@ -191,7 +181,6 @@ class GoogleCalendarService
                 'timeMax' => Carbon::parse($endTime)->endOfDay()->toIso8601String(),
                 'singleEvents' => true,
             ];
-            dd($optParams);
 
             if (!$isStartOfDay) {
                 $optParams = [
@@ -202,7 +191,7 @@ class GoogleCalendarService
 
             $calendarId = 'primary';
 
-            $events = $this->service->events->listEvents($calendarId, $optParams);
+            $events = $this->googleCalendar->events->listEvents($calendarId, $optParams);
 
             Log::info('[GoogleCalendarService] Events from Google Calendar retrieved successfully!');
 
@@ -236,7 +225,7 @@ class GoogleCalendarService
         $freeBusyRequest->setTimeZone($timezone);
         $freeBusyRequest->setItems([['id' => $calendarId]]);
 
-        $freeBusyResponse = $this->service->freebusy->query($freeBusyRequest);
+        $freeBusyResponse = $this->googleCalendar->freebusy->query($freeBusyRequest);
         $calendars = $freeBusyResponse->getCalendars();
 
         $busySlots = $calendars[$calendarId]->busy;
